@@ -5,7 +5,7 @@ struct queue_root;
 
 struct queue_head {
     struct queue_head *next;
-    void* task;
+    void* (*task)(void*);
 };
 
 struct queue_root *ALLOC_QUEUE_ROOT();
