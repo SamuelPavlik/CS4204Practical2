@@ -3,7 +3,7 @@
 
 #include "queue.h"
 
-#define QUEUE_POISON1 ((void*)0xCAFEBAB5)
+#define EMPTY_DATA ((void*)0xCAFEBAB5)
 
 /**
  * Create a new Queue struct
@@ -24,7 +24,7 @@ Queue* Queue_init()
 
 //void INIT_QUEUE_HEAD(QueueNode* node)
 //{
-//    node->next = QUEUE_POISON1;
+//    node->next = EMPTY_DATA;
 //}
 
 /**
@@ -71,7 +71,7 @@ QueueNode* Queue_get(Queue* queue)
             continue;
         }
 
-        head->next = QUEUE_POISON1;
+        head->next = EMPTY_DATA;
         return head;
     }
 }
@@ -82,16 +82,22 @@ QueueNode* Queue_get(Queue* queue)
  * @return pointer to data of first node in the queue
  */
 void* Queue_peek(Queue *queue) {
+    pthread_mutex_lock(&queue->head_lock);
+    void* data = queue->head->data;
     if (queue->head == &queue->divider) {
         if (queue->head->next != NULL) {
-            return queue->head->next->data;
+            data = queue->head->next->data;
+            pthread_mutex_unlock(&queue->head_lock);
+            return data;
         }
         else {
+            pthread_mutex_unlock(&queue->head_lock);
             return NULL;
         }
     }
 
-    return queue->head->data;
+    pthread_mutex_unlock(&queue->head_lock);
+    return data;
 }
 
 /**

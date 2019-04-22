@@ -126,6 +126,12 @@ void* fibFunc(void* n) {
     return result;
 }
 
+/**
+ * Measure time it takes farm pattern to finish a number of tasks. The compexity of tasks raises exponentially.
+ * @param numOfWorkers Number of workers in the farm
+ * @param maxIndex Number of tasks to finish.
+ * @return Array of times, where each time corresponds to a different task.
+ */
 long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
     long long* times = malloc(maxIndex * sizeof(long long));
 
