@@ -11,6 +11,21 @@
  */
 Queue* Queue_init()
 {
+//    Queue* this = malloc(sizeof(Queue));
+//    this->headLock = malloc(sizeof(pthread_t));
+//    this->tailLock = malloc(sizeof(pthread_t));
+//    pthread_mutex_init(this->headLock, NULL);
+//    pthread_mutex_init(this->tailLock, NULL);
+//
+////    long unsigned int x = sizeof(QueueNode);
+//    this->divider = malloc(sizeof(QueueNode));
+//    this->divider->next = NULL;
+//    this->divider->data = NULL;
+//    this->head = this->divider;
+//    this->tail = this->divider;
+//    this->size = 0;
+//    return this;
+
     Queue* this = malloc(sizeof(Queue));
     pthread_mutex_init(&this->headLock, NULL);
     pthread_mutex_init(&this->tailLock, NULL);
@@ -24,7 +39,10 @@ Queue* Queue_init()
 }
 
 void Queue_destroy(Queue* this) {
-
+//    free(this->headLock);
+//    free(this->tailLock);
+//    free(this->divider);
+    free(this);
 }
 
 /**

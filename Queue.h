@@ -24,6 +24,8 @@ void Queue_print(Queue *queue);
 
 Queue* Queue_init();
 
+void Queue_destroy(Queue* this);
+
 void INIT_QUEUE_HEAD(QueueNode* head);
 
 void Queue_put(QueueNode* node, Queue* queue);

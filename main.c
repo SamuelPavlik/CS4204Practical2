@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
-//#include <time.h>
 #include <sys/time.h>
 #include "Queue.h"
 #include "Farm.h"
@@ -53,13 +52,13 @@ int main() {
     Worker* worker1 = Worker_init(printTask, NULL, NULL);
     Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
     Worker* worker2 = Worker_init(printTask, NULL, NULL);
-    int len = 50000;
-    void* data[len];
-    for (int j = 0; j < len; ++j) {
-        char* x = malloc(10 * sizeof(char));
-        strcpy(x, "s");
-        data[j] = x;
-    }
+//    int len = 50000;
+//    void* data[len];
+//    for (int j = 0; j < len; ++j) {
+//        char* x = malloc(10 * sizeof(char));
+//        strcpy(x, "s");
+//        data[j] = x;
+//    }
 
 //    Pipeline* betweenPipe = Pipe_init();
 //    Pipe_addStage(betweenPipe, (Stage *) farm1);
@@ -86,22 +85,20 @@ int main() {
         printf("Error opening file!\n");
         exit(1);
     }
-//
-//    const char *text = "Write this to the file";
-//    fprintf(file, "Some text: %s\n", text);
-//    fprintf(file, "Some text: %s\n", text);
 
-    int maxIndex = 10;
-    for (int workers_num = 1; workers_num <= 10; workers_num+=1) {
-        long long* diffs = Pipe_measureFarm(workers_num, maxIndex);
+    int maxIndex = 20;
+    for (int workers_num = 19; workers_num <= 20; workers_num+=1) {
+        printf("Number of workers: %d\n", workers_num);
+        long long* times = Pipe_measureFarm(workers_num, maxIndex);
         for (int i = 0; i < maxIndex; ++i) {
 //            if (i > 0) fprintf(file, ",");
-//            fprintf(file, "%lld", diffs[i]);
-            printf("%lld,", diffs[i]);
+//            fprintf(file, "%lld", times[i]);
+            printf("%lld,", times[i]);
         }
 //        fprintf(file, "\n");
         printf("\n");
-        free(diffs);
+        free(times);
+
     }
 
 //    long long* diffs = Pipe_measureFarm(21, maxIndex);

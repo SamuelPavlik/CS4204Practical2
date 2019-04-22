@@ -23,7 +23,6 @@ Farm* Farm_init(int num, void* (*func)(void*), Queue* input, Queue* output) {
     this->base.output = output;
     this->base.func = func;
     for (int i = 0; i < num; ++i) {
-//        pthread_t* id = malloc(sizeof(pthread_t));
         this->workers[i] = Worker_init(func, this->base.input, this->base.output);
     }
 

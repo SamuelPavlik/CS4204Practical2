@@ -56,6 +56,23 @@ void Pipe_putToQueue(Pipeline* pipeline, void* data[], int size) {
 }
 
 /**
+ * Get data in output queue to data array
+ * @param pipeline pipeline struct pointer
+ * @return the data array
+ */
+void** Pipe_getOutput(Pipeline *pipeline) {
+    int size = pipeline->base.output->size;
+    void** data = malloc(size * sizeof(void*));
+    for (int i = 0; i < size; ++i) {
+        QueueNode* node = Queue_get(pipeline->base.output);
+        data[i] = node->data;
+        free(node);
+    }
+
+    return data;
+}
+
+/**
  * Run pipeline
  * @param pipeline pipeline struct pointer
  */
@@ -121,9 +138,8 @@ int fib(int n)
 }
 
 void* fibFunc(void* n) {
-    int* result = malloc(sizeof(int));
-    *result = fib(*((int *) n));
-    return result;
+    *((int *) n) = fib(*((int *) n));
+    return n;
 }
 
 /**
@@ -160,11 +176,10 @@ long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
         }
         free(output);
 
-        for (int j = 0; j < size; ++j) {
-            free(data[j]);
-        }
+//        for (int j = 0; j < size; ++j) {
+//            free(data[j]);
+//        }
 
-        printf(", %lld\n", times[i]);
         size*=2;
     }
 
@@ -182,8 +197,7 @@ Pipeline* Pipe_init() {
     Pipeline* pipeline = malloc(sizeof(Pipeline));
     pipeline->size = 0;
     pipeline->stages = malloc(MAX_NUM * sizeof(Stage*));
-    pipeline->base.name = malloc(10 * sizeof(char));
-    strcpy(pipeline->base.name, PIPE);
+    pipeline->base.name = PIPE;
 
     return pipeline;
 }
@@ -194,12 +208,14 @@ Pipeline* Pipe_init() {
  */
 void Pipe_destroy(Pipeline* pipeline) {
     if (pipeline->base.input != NULL) {
-        free(pipeline->base.input);
-        pipeline->base.input = NULL;
+        Queue_destroy(pipeline->base.input);
+//        free(pipeline->base.input);
+//        pipeline->base.input = NULL;
     }
     if (pipeline->base.output != NULL) {
-        free(pipeline->base.output);
-        pipeline->base.output = NULL;
+        Queue_destroy(pipeline->base.output);
+//        free(pipeline->base.output);
+//        pipeline->base.output = NULL;
     }
 
     for (int i = 0; i < pipeline->size; ++i) {
@@ -222,27 +238,8 @@ void Pipe_destroy(Pipeline* pipeline) {
             exit(1);
         }
 
-        free(stage->input);
+//        free(stage->input);
     }
-    free(pipeline->base.output);
-
     free(pipeline->stages);
     free(pipeline);
-}
-
-/**
- * Get data in output queue to data array
- * @param pipeline pipeline struct pointer
- * @return the data array
- */
-void** Pipe_getOutput(Pipeline *pipeline) {
-    int size = pipeline->base.output->size;
-    void** data = malloc(size * sizeof(void*));
-    for (int i = 0; i < size; ++i) {
-        QueueNode* node = Queue_get(pipeline->base.output);
-        data[i] = node->data;
-        free(node);
-    }
-
-    return data;
 }
