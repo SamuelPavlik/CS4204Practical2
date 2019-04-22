@@ -1,7 +1,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "queue.h"
+#include "Queue.h"
 #include "Worker.h"
 #include "Farm.h"
 #include "Pipeline.h"
@@ -23,8 +23,8 @@ Farm* Farm_init(int num, void* (*func)(void*), Queue* input, Queue* output) {
     this->base.output = output;
     this->base.func = func;
     for (int i = 0; i < num; ++i) {
-        pthread_t* id = malloc(sizeof(pthread_t));
-        this->workers[i] = Worker_init(func, this->base.input, this->base.output, id);
+//        pthread_t* id = malloc(sizeof(pthread_t));
+        this->workers[i] = Worker_init(func, this->base.input, this->base.output);
     }
 
     return this;

@@ -1,7 +1,7 @@
 #ifndef CS4204PRACTICAL2_PIPELINE_H
 #define CS4204PRACTICAL2_PIPELINE_H
 
-#include "queue.h"
+#include "Queue.h"
 #include "Stage.h"
 
 #define FARM "FARM"

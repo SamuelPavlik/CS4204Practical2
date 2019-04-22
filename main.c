@@ -4,7 +4,7 @@
 #include <pthread.h>
 //#include <time.h>
 #include <sys/time.h>
-#include "queue.h"
+#include "Queue.h"
 #include "Farm.h"
 #include "Pipeline.h"
 #include "Stage.h"
@@ -50,9 +50,9 @@ void* multiplyTask(void *toPrint) {
 
 int main() {
     Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
-    Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
+    Worker* worker1 = Worker_init(printTask, NULL, NULL);
     Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
-    Worker* worker2 = Worker_init(printTask, NULL, NULL, NULL);
+    Worker* worker2 = Worker_init(printTask, NULL, NULL);
     int len = 50000;
     void* data[len];
     for (int j = 0; j < len; ++j) {
@@ -92,7 +92,7 @@ int main() {
 //    fprintf(file, "Some text: %s\n", text);
 
     int maxIndex = 10;
-    for (int workers_num = 10; workers_num < 1000; workers_num+=100) {
+    for (int workers_num = 1; workers_num <= 10; workers_num+=1) {
         long long* diffs = Pipe_measureFarm(workers_num, maxIndex);
         for (int i = 0; i < maxIndex; ++i) {
 //            if (i > 0) fprintf(file, ",");
@@ -103,6 +103,17 @@ int main() {
         printf("\n");
         free(diffs);
     }
+
+//    long long* diffs = Pipe_measureFarm(21, maxIndex);
+//    for (int i = 0; i < maxIndex; ++i) {
+////        if (i > 0) fprintf(file, ",");
+////        fprintf(file, "%lld", diffs[i]);
+//        printf("%lld,", diffs[i]);
+//    }
+////        fprintf(file, "\n");
+//    printf("\n");
+//    free(diffs);
+
     fclose(file);
 
     return 0;

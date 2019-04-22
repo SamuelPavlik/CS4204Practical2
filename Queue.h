@@ -11,13 +11,10 @@ typedef struct queue_head {
 
 typedef struct queue_root {
     QueueNode* head;
-    pthread_mutex_t head_lock;
-
+    pthread_mutex_t headLock;
     QueueNode* tail;
-    pthread_mutex_t tail_lock;
-
+    pthread_mutex_t tailLock;
     QueueNode divider;
-
     int size;
 } Queue;
 

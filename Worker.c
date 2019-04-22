@@ -1,4 +1,4 @@
-#include "queue.h"
+#include "Queue.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "Worker.h"
@@ -12,13 +12,13 @@
  * @param id pthread id pointer
  * @return worker struct pointer
  */
-Worker* Worker_init(void* (*func)(void*), Queue* input, Queue* output, pthread_t* id) {
+Worker* Worker_init(void* (*func)(void*), Queue* input, Queue* output) {
     Worker* this = malloc(sizeof(Worker));
     this->base.name = STAGE;
     this->base.func = func;
     this->base.input = input;
     this->base.output = output;
-    this->id = id;
+    this->id = malloc(sizeof(pthread_t));
     this->status = WAITING;
 
     return this;

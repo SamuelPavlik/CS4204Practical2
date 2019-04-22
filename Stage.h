@@ -1,7 +1,7 @@
 #ifndef CS4204PRACTICAL2_STAGE_H
 #define CS4204PRACTICAL2_STAGE_H
 
-#include "queue.h"
+#include "Queue.h"
 
 typedef struct {
     char* name;

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "queue.h"
+#include "Queue.h"
 
-#define EMPTY_DATA ((void*)0xCAFEBAB5)
+#define EMPTY_NODE ((void*)0xCAFEBAB5)
 
 /**
  * Create a new Queue struct
@@ -12,20 +12,20 @@
 Queue* Queue_init()
 {
     Queue* this = malloc(sizeof(Queue));
-    pthread_mutex_init(&this->head_lock, NULL);
-    pthread_mutex_init(&this->tail_lock, NULL);
+    pthread_mutex_init(&this->headLock, NULL);
+    pthread_mutex_init(&this->tailLock, NULL);
 
     this->divider.next = NULL;
+    this->divider.data = NULL;
     this->head = &this->divider;
     this->tail = &this->divider;
     this->size = 0;
     return this;
 }
 
-//void INIT_QUEUE_HEAD(QueueNode* node)
-//{
-//    node->next = EMPTY_DATA;
-//}
+void Queue_destroy(Queue* this) {
+
+}
 
 /**
  * Put node to queue
@@ -37,11 +37,11 @@ void Queue_put(QueueNode* node, Queue* queue)
     node->next = NULL;
 
     //atomic push to queue by acquiring mutex lock
-    pthread_mutex_lock(&queue->tail_lock);
+    pthread_mutex_lock(&queue->tailLock);
     queue->tail->next = node;
     queue->tail = node;
     queue->size = queue->size + 1;
-    pthread_mutex_unlock(&queue->tail_lock);
+    pthread_mutex_unlock(&queue->tailLock);
 }
 
 /**
@@ -54,24 +54,26 @@ QueueNode* Queue_get(Queue* queue)
     QueueNode *head, *next;
 
     while (1) {
-        pthread_mutex_lock(&queue->head_lock);
+        pthread_mutex_lock(&queue->headLock);
         head = queue->head;
         next = head->next;
+        //No next element means that this element is the divider element and therefore the queue is empty
         if (next == NULL) {
-            pthread_mutex_unlock(&queue->head_lock);
+            pthread_mutex_unlock(&queue->headLock);
             return NULL;
         }
         queue->head = next;
 
         if (queue->size > 0) queue->size = queue->size - 1;
-        pthread_mutex_unlock(&queue->head_lock);
+        pthread_mutex_unlock(&queue->headLock);
 
+        //If divider, then enqueue back and retrieve next element
         if (head == &queue->divider) {
             Queue_put(head, queue);
             continue;
         }
 
-        head->next = EMPTY_DATA;
+        head->next = EMPTY_NODE;
         return head;
     }
 }
@@ -82,21 +84,21 @@ QueueNode* Queue_get(Queue* queue)
  * @return pointer to data of first node in the queue
  */
 void* Queue_peek(Queue *queue) {
-    pthread_mutex_lock(&queue->head_lock);
+    pthread_mutex_lock(&queue->headLock);
     void* data = queue->head->data;
     if (queue->head == &queue->divider) {
         if (queue->head->next != NULL) {
             data = queue->head->next->data;
-            pthread_mutex_unlock(&queue->head_lock);
+            pthread_mutex_unlock(&queue->headLock);
             return data;
         }
         else {
-            pthread_mutex_unlock(&queue->head_lock);
+            pthread_mutex_unlock(&queue->headLock);
             return NULL;
         }
     }
 
-    pthread_mutex_unlock(&queue->head_lock);
+    pthread_mutex_unlock(&queue->headLock);
     return data;
 }
 
