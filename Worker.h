@@ -18,7 +18,7 @@ typedef struct {
     int status;
 } Worker;
 
-Worker* Worker_init(void* (*func)(void*), struct queue_root* input, struct queue_root* output);
+Worker* Worker_init(void* (*func)(void*), Queue* input, Queue* output, pthread_t* id);
 
 void Worker_destroy(Worker* this);
 

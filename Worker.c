@@ -12,13 +12,13 @@
  * @param id pthread id pointer
  * @return worker struct pointer
  */
-Worker* Worker_init(void* (*func)(void*), Queue* input, Queue* output) {
+Worker* Worker_init(void* (*func)(void*), Queue* input, Queue* output, pthread_t* id) {
     Worker* this = malloc(sizeof(Worker));
     this->base.name = STAGE;
     this->base.func = func;
     this->base.input = input;
     this->base.output = output;
-    this->id = malloc(sizeof(pthread_t));
+    this->id = id;
     this->status = WAITING;
 
     return this;
@@ -50,10 +50,17 @@ void Worker_destroy(Worker* this) {
 void* wrapperFunc(void* this) {
     Worker* wInput = ((Worker*) this);
 
-    while(*((int*) Queue_peek(wInput->base.input)) != EOS) {
-        QueueNode* node = Queue_get(wInput->base.input);
+    QueueNode* node = Queue_get(wInput->base.input);
+    while(node != NULL) {
+        //if node data is EOS enqueue back to the input queue and finish
+        //this is in order to enqueue the EOS element when all workers are collected
+        if (*((int *) node->data) == EOS) {
+            Queue_put(node, wInput->base.input);
+            break;
+        }
         node->data = wInput->base.func(node->data);
         Queue_put(node, wInput->base.output);
+        node = Queue_get(wInput->base.input);
     }
 
     return ((void*) EOS);

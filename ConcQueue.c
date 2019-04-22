@@ -38,10 +38,11 @@ Queue* Queue_init()
     return this;
 }
 
+/**
+ * destroy this queue
+ * @param this queue struct pointer
+ */
 void Queue_destroy(Queue* this) {
-//    free(this->headLock);
-//    free(this->tailLock);
-//    free(this->divider);
     free(this);
 }
 

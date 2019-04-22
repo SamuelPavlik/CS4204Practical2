@@ -23,7 +23,7 @@ Farm* Farm_init(int num, void* (*func)(void*), Queue* input, Queue* output) {
     this->base.output = output;
     this->base.func = func;
     for (int i = 0; i < num; ++i) {
-        this->workers[i] = Worker_init(func, this->base.input, this->base.output);
+        this->workers[i] = Worker_init(func, this->base.input, this->base.output, malloc(sizeof(pthread_t)));
     }
 
     return this;
@@ -73,7 +73,14 @@ void Farm_collect(Farm *this) {
 //        printf("Join: %p\n", this->workers[i]->id);
         pthread_join(*(this->workers[i]->id), NULL);
     }
+//    printf("All joined\n");
+//    printf("Input\n");
+//    Queue_print(this->base.input);
+//    printf("Output\n");
+//    Queue_print(this->base.output);
+
     Queue_put(Queue_get(this->base.input), this->base.output);
+//    printf("EOS enqueued\n");
 }
 
 /**
@@ -88,6 +95,8 @@ void Farm_print(Farm *this) {
     for (int i = 0; i < this->n; ++i) {
         printf("Worker: %p\n", this->workers[i]->id);
         printf("- status: %d\n", this->workers[i]->status);
+        printf("- input: %p\n", this->workers[i]->base.input);
+        printf("- output: %p\n", this->workers[i]->base.output);
     }
 }
 

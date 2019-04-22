@@ -2,7 +2,7 @@
 #define CS4204PRACTICAL2_QUEUE_H
 #include <pthread.h>
 
-#define EOS -1
+#define EOS -1000
 
 typedef struct queue_head {
     struct queue_head *next;

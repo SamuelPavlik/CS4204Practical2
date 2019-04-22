@@ -28,6 +28,8 @@ void Pipe_putToQueue(Pipeline* pipeline, void* data[], int size);
 
 long long Pipe_measure(Pipeline* pipeline);
 
+void Pipe_print(Pipeline* this);
+
 long long* Pipe_measureFarm(int numOfWorkers, int maxIndex);
 
 void Pipe_destroy(Pipeline* pipeline);

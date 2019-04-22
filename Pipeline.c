@@ -22,9 +22,20 @@ void Pipe_addStage(Pipeline *pipeline, Stage* stageData) {
     else {
         stageData->input = Queue_init();
         pipeline->base.input = stageData->input;
+
+//        if (pipeline->base.input == NULL) {
+//            stageData->input = Queue_init();
+//            pipeline->base.input = stageData->input;
+//        }
+//        else {
+//            stageData->input = pipeline->base.input;
+//        }
     }
 
     //assign output queue to both pipeline and this stage
+//    if (strcmp(stageData->name, PIPE) != 0) {
+//        stageData->output = Queue_init();
+//    }
     stageData->output = Queue_init();
     pipeline->base.output = stageData->output;
     pipeline->stages[pipeline->size] = stageData;
@@ -78,6 +89,8 @@ void** Pipe_getOutput(Pipeline *pipeline) {
  */
 void Pipe_runPipe(Pipeline *pipeline) {
     for (int i = 0; i < pipeline->size; ++i) {
+//        Queue_print(pipeline->base.input);
+//        Queue_print(pipeline->base.output);
         Stage* stage = pipeline->stages[i];
         if (strcmp(stage->name, FARM) == 0) {
             Farm* farm = (Farm *) stage;
@@ -150,12 +163,11 @@ void* fibFunc(void* n) {
  */
 long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
     long long* times = malloc(maxIndex * sizeof(long long));
-
     Pipeline* pipeline = Pipe_init();
     Farm* farm = Farm_init(numOfWorkers, fibFunc, NULL, NULL);
     Pipe_addStage(pipeline, (Stage *) farm);
-
     int size = 1;
+
     for (int i = 0; i < maxIndex; i++) {
         void* data[size];
         for (int j = 0; j < size; ++j) {
@@ -165,7 +177,6 @@ long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
         }
         printf("%d\n", size);
         Pipe_putToQueue(pipeline, data, size);
-//        Queue_print(pipeline->base.input);
 
         times[i] = Pipe_measure(pipeline);
 
@@ -175,11 +186,6 @@ long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
             free(output[j]);
         }
         free(output);
-
-//        for (int j = 0; j < size; ++j) {
-//            free(data[j]);
-//        }
-
         size*=2;
     }
 
@@ -242,4 +248,25 @@ void Pipe_destroy(Pipeline* pipeline) {
     }
     free(pipeline->stages);
     free(pipeline);
+}
+
+void Pipe_print(Pipeline* this) {
+    printf("Pipeline %p\n", this);
+    printf("Input: %p\n", this->base.input);
+    printf("Output: %p\n", this->base.output);
+    printf("Stages %d\n", this->size);
+    for (int i = 0; i < this->size; ++i) {
+        printf("-Stage %s %p\n", this->stages[i]->name, this->stages[i]);
+        if (strcmp(this->stages[i]->name, FARM) == 0) {
+            Farm_print((Farm *) this->stages[i]);
+        }
+        else if (strcmp(this->stages[i]->name, PIPE) == 0) {
+            Pipe_print((Pipeline *) this->stages[i]);
+        }
+        else {
+            printf("  -Input: %p\n", this->stages[i]->input);
+            printf("  -Output: %p\n", this->stages[i]->output);
+
+        }
+    }
 }
