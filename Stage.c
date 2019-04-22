@@ -1,4 +1,4 @@
-typedef struct {
-    void* (*task)(void*);
-} Stage;
-
+//typedef struct {
+//    void* (*task)(void*);
+//} Stage;
+//

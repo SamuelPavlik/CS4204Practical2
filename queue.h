@@ -1,19 +1,36 @@
 #ifndef CS4204PRACTICAL2_QUEUE_H
 #define CS4204PRACTICAL2_QUEUE_H
+#include <pthread.h>
 
-struct queue_root;
+#define EOS -1
 
-struct queue_head {
+typedef struct queue_head {
     struct queue_head *next;
-    void* (*task)(void*);
-};
+    void* data;
+} QueueNode;
 
-struct queue_root *ALLOC_QUEUE_ROOT();
-void INIT_QUEUE_HEAD(struct queue_head *head);
+typedef struct queue_root {
+    QueueNode* head;
+    pthread_mutex_t head_lock;
 
-void queue_put(struct queue_head *new,
-               struct queue_root *root);
+    QueueNode* tail;
+    pthread_mutex_t tail_lock;
 
-struct queue_head *queue_get(struct queue_root *root);
+    QueueNode divider;
+
+    int size;
+} Queue;
+
+void* Queue_peek(Queue* queue);
+
+void Queue_print(Queue *queue);
+
+Queue* Queue_init();
+
+void INIT_QUEUE_HEAD(QueueNode* head);
+
+void Queue_put(QueueNode* node, Queue* queue);
+
+QueueNode* Queue_get(Queue* queue);
 
 #endif //CS4204PRACTICAL2_QUEUE_H

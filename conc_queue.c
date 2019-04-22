@@ -1,70 +1,113 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 
 #include "queue.h"
 
 #define QUEUE_POISON1 ((void*)0xCAFEBAB5)
 
-struct queue_root {
-    struct queue_head *head;
-    pthread_mutex_t head_lock;
-
-    struct queue_head *tail;
-    pthread_mutex_t tail_lock;
-
-    struct queue_head divider;
-};
-
-struct queue_root *ALLOC_QUEUE_ROOT()
+/**
+ * Create a new Queue struct
+ * @return new Queue struct pointer
+ */
+Queue* Queue_init()
 {
-    struct queue_root *root = malloc(sizeof(struct queue_root));
-    pthread_mutex_init(&root->head_lock, NULL);
-    pthread_mutex_init(&root->tail_lock, NULL);
+    Queue* this = malloc(sizeof(Queue));
+    pthread_mutex_init(&this->head_lock, NULL);
+    pthread_mutex_init(&this->tail_lock, NULL);
 
-    root->divider.next = NULL;
-    root->head = &root->divider;
-    root->tail = &root->divider;
-    return root;
+    this->divider.next = NULL;
+    this->head = &this->divider;
+    this->tail = &this->divider;
+    this->size = 0;
+    return this;
 }
 
-void INIT_QUEUE_HEAD(struct queue_head *head)
+//void INIT_QUEUE_HEAD(QueueNode* node)
+//{
+//    node->next = QUEUE_POISON1;
+//}
+
+/**
+ * Put node to queue
+ * @param node node struct pointer to put into queue
+ * @param queue queue struct pointer
+ */
+void Queue_put(QueueNode* node, Queue* queue)
 {
-    head->next = QUEUE_POISON1;
+    node->next = NULL;
+
+    //atomic push to queue by acquiring mutex lock
+    pthread_mutex_lock(&queue->tail_lock);
+    queue->tail->next = node;
+    queue->tail = node;
+    queue->size = queue->size + 1;
+    pthread_mutex_unlock(&queue->tail_lock);
 }
 
-void queue_put(struct queue_head *new,
-               struct queue_root *root)
+/**
+ * Get first element from queue
+ * @param queue queue struct pointer
+ * @return first node struct pointer, NULL if empty
+ */
+QueueNode* Queue_get(Queue* queue)
 {
-    new->next = NULL;
-
-    pthread_mutex_lock(&root->tail_lock);
-    root->tail->next = new;
-    root->tail = new;
-    pthread_mutex_unlock(&root->tail_lock);
-}
-
-struct queue_head *queue_get(struct queue_root *root)
-{
-    struct queue_head *head, *next;
+    QueueNode *head, *next;
 
     while (1) {
-        pthread_mutex_lock(&root->head_lock);
-        head = root->head;
+        pthread_mutex_lock(&queue->head_lock);
+        head = queue->head;
         next = head->next;
         if (next == NULL) {
-            pthread_mutex_unlock(&root->head_lock);
+            pthread_mutex_unlock(&queue->head_lock);
             return NULL;
         }
-        root->head = next;
-        pthread_mutex_unlock(&root->head_lock);
+        queue->head = next;
 
-        if (head == &root->divider) {
-            queue_put(head, root);
+        if (queue->size > 0) queue->size = queue->size - 1;
+        pthread_mutex_unlock(&queue->head_lock);
+
+        if (head == &queue->divider) {
+            Queue_put(head, queue);
             continue;
         }
 
         head->next = QUEUE_POISON1;
         return head;
     }
+}
+
+/**
+ * Look at first element from queue but don't dequeue
+ * @param queue queue struct pointer
+ * @return pointer to data of first node in the queue
+ */
+void* Queue_peek(Queue *queue) {
+    if (queue->head == &queue->divider) {
+        if (queue->head->next != NULL) {
+            return queue->head->next->data;
+        }
+        else {
+            return NULL;
+        }
+    }
+
+    return queue->head->data;
+}
+
+/**
+ * Print queue info
+ * @param queue queue struct pointer
+ */
+void Queue_print(Queue *queue) {
+    printf("Queue size: %d\n", queue->size);
+    QueueNode* node = queue->head;
+    while (node != NULL) {
+        if (node == &queue->divider){
+            node = node->next;
+            continue;
+        }
+        printf("Node data %d\n", *((int *) node->data));
+        node = node->next;
+    }
+    printf("End reached\n");
 }

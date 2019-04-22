@@ -1,55 +1,109 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+//#include <time.h>
+#include <sys/time.h>
 #include "queue.h"
-
-#define MAX_THREAD_NUM 1000
-
-pthread_t thread_ids[MAX_THREAD_NUM];
-int count = 0;
-struct queue_root* queueRoot;
-
-void* svc(void* task) {
-//    pthread_create(&thread_ids[count++], NULL, task)
-    return NULL;
-}
-
-void* farm(void* task , int num) {
-    return NULL;
-}
+#include "Farm.h"
+#include "Pipeline.h"
+#include "Stage.h"
 
 void *printTask(void *toPrint) {
+//    int* num = ((int*) toPrint);
+    strcat(toPrint, "P");
     printf("Printing: %s\n", ((char *) toPrint));
+    return toPrint;
 }
 
-void *multiplyTask(void *toPrint) {
-    printf("Multiplying: %d\n", ((int) toPrint)*2);
-
-    return ((void*) toPrint);
+void* multiplyTask(void *toPrint) {
+//    int* num = ((int*) toPrint);
+    strcat(toPrint, "M");
+    printf("Multiplying: %s\n", ((char *) toPrint));
+    return toPrint;
 }
+
+//int fib(int n)
+//{
+//    int  i, Fnew, Fold, temp,ans;
+//
+//    Fnew = 1;  Fold = 0;
+//    for ( i = 2;
+//          i <= n;          /* apsim_loop 1 0 */
+//          i++ )
+//    {
+//        temp = Fnew;
+//        Fnew = Fnew + Fold;
+//        Fold = temp;
+//    }
+//    ans = Fnew;
+//    return ans;
+//}
+//
+//void* fibFunc(void* n) {
+//    int* result = malloc(sizeof(int));
+//    *result = fib(*((int *) n));
+//    printf("Result: %d\n", *result);
+//    return result;
+//}
+
 
 int main() {
-    queueRoot = ALLOC_QUEUE_ROOT();
-    char* elem = "Element";
-    void* status1;
-    void* status2;
-    struct queue_head* head1 = malloc(sizeof(struct queue_head));
-    struct queue_head* head2 = malloc(sizeof(struct queue_head));
+    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
+    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
+    Worker* worker2 = Worker_init(printTask, NULL, NULL, NULL);
+    int len = 50000;
+    void* data[len];
+    for (int j = 0; j < len; ++j) {
+        char* x = malloc(10 * sizeof(char));
+        strcpy(x, "s");
+        data[j] = x;
+    }
 
-    head1->task = printTask;
-    head2->task = multiplyTask;
-    queue_put(head1, queueRoot);
-    queue_put(head2, queueRoot);
+//    Pipeline* betweenPipe = Pipe_init();
+//    Pipe_addStage(betweenPipe, (Stage *) farm1);
+//    Pipe_addStage(betweenPipe, (Stage *) worker1);
 
-    pthread_t* tid1 = malloc(sizeof(pthread_t));
-    pthread_t* tid2 = malloc(sizeof(pthread_t));
-    pthread_create(tid1, NULL, queue_get(queueRoot)->task, ((void*) "Hello"));
-    pthread_create(tid2, NULL, queue_get(queueRoot)->task, ((void*) 10));
-    pthread_join(*tid1, &status1);
-    pthread_join(*tid2, &status2);
-    printf("Both done\n");
-//    printf("Status 1: %d\n", ((int) status1));
-//    printf("Status 2: %d", ((int) status2));
+//    Pipeline* pipeline = Pipe_init();
+//    Pipe_addStage(pipeline, (Stage *) worker2);
+//    Pipe_addStage(pipeline, (Stage *) farm2);
+//    Pipe_addStage(pipeline, (Stage *) farm1);
+//    Pipe_addStage(pipeline, (Stage *) worker1);
+//    Pipe_putToQueue(pipeline, data, len);
+//    Pipe_runPipe(pipeline);
+
+//    int size = pipeline->base.output->size - 1;
+//    printf("Size: %d\n", size);
+//    void** output = Pipe_getOutput(pipeline);
+//    for (int i = 0; i < size; ++i) {
+//        printf("Output %d: %s\n", i, ((char *) output[i]));
+//    }
+
+    FILE* file = fopen("../results.txt", "a");
+    if (file == NULL)
+    {
+        printf("Error opening file!\n");
+        exit(1);
+    }
+//
+//    const char *text = "Write this to the file";
+//    fprintf(file, "Some text: %s\n", text);
+//    fprintf(file, "Some text: %s\n", text);
+
+    int maxIndex = 10;
+    for (int workers_num = 10; workers_num < 1000; workers_num+=100) {
+        long long* diffs = Pipe_measureFarm(workers_num, maxIndex);
+        for (int i = 0; i < maxIndex; ++i) {
+//            if (i > 0) fprintf(file, ",");
+//            fprintf(file, "%lld", diffs[i]);
+            printf("%lld,", diffs[i]);
+        }
+//        fprintf(file, "\n");
+        printf("\n");
+        free(diffs);
+    }
+    fclose(file);
 
     return 0;
 }
