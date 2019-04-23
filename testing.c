@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <sys/time.h>
+
 #include "parapat.h"
 
 void *printTask(void *toPrint) {
@@ -21,7 +22,7 @@ void* multiplyTask(void *toPrint) {
  * Test single farm pipeline for the output
  */
 void testSingleFarm() {
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
     int len = 5;
     void* data[len];
     for (int j = 0; j < len; ++j) {
@@ -35,11 +36,17 @@ void testSingleFarm() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputM") != 0) {
             printf("Test testSingleFarm failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testSingleFarm succeeded\n");
 }
@@ -48,8 +55,8 @@ void testSingleFarm() {
  * Test two farms in pipeline for the output
  */
 void testTwoFarms() {
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
-    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
+    Farm* farm2 = Farm_init(5, printTask);
     int len = 5;
     void* data[len];
     for (int j = 0; j < len; ++j) {
@@ -64,11 +71,17 @@ void testTwoFarms() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputMP") != 0) {
             printf("Test testTwoFarms failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testTwoFarms succeeded\n");
 }
@@ -77,8 +90,8 @@ void testTwoFarms() {
  * Test two farms and a worker in pipeline for output
  */
 void testTwoFarmsAndWorker() {
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
-    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
+    Farm* farm2 = Farm_init(5, printTask);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
     int len = 5;
     void* data[len];
@@ -95,11 +108,17 @@ void testTwoFarmsAndWorker() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputMPP") != 0) {
             printf("Test testTwoFarmsAndWorker failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testTwoFarmsAndWorker succeeded\n");
 }
@@ -108,7 +127,7 @@ void testTwoFarmsAndWorker() {
  * Test worker and farm in pipeline for output
  */
 void testWorkerAndFarm() {
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
     int len = 5;
     void* data[len];
@@ -124,11 +143,17 @@ void testWorkerAndFarm() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputPM") != 0) {
             printf("Test testWorkerAndFarm failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testWorkerAndFarm succeeded\n");
 }
@@ -137,9 +162,9 @@ void testWorkerAndFarm() {
  * Test farm, worker and another farm in pipeline for output
  */
 void testFarmWorkerFarm() {
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
-    Farm* farm2 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm2 = Farm_init(5, multiplyTask);
     int len = 5;
     void* data[len];
     for (int j = 0; j < len; ++j) {
@@ -155,11 +180,17 @@ void testFarmWorkerFarm() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputMPM") != 0) {
             printf("Test testFarmWorkerFarm failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testFarmWorkerFarm succeeded\n");
 }
@@ -170,7 +201,7 @@ void testFarmWorkerFarm() {
 void testWorkerFarmWorker() {
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
     Worker* worker2 = Worker_init(printTask, NULL, NULL, NULL);
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
     int len = 5;
     void* data[len];
     for (int j = 0; j < len; ++j) {
@@ -186,11 +217,17 @@ void testWorkerFarmWorker() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputPMP") != 0) {
             printf("Test testWorkerFarmWorker failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testWorkerFarmWorker succeeded\n");
 }
@@ -199,8 +236,8 @@ void testWorkerFarmWorker() {
  * Test farm followed by pipeline in pipeline for output
  */
 void testFarmAndPipe() {
-    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm2 = Farm_init(5, printTask);
+    Farm* farm1 = Farm_init(5, multiplyTask);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
     int len = 5;
     void* data[len];
@@ -221,11 +258,17 @@ void testFarmAndPipe() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputPMP") != 0) {
             printf("Test testFarmAndPipe failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testFarmAndPipe succeeded\n");
 }
@@ -234,9 +277,9 @@ void testFarmAndPipe() {
  * Test pipeline followed by farm in pipeline for output
  */
 void testPipeAndFarm() {
-    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
-    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
+    Farm* farm2 = Farm_init(5, printTask);
     int len = 5;
     void* data[len];
     for (int j = 0; j < len; ++j) {
@@ -256,11 +299,17 @@ void testPipeAndFarm() {
     Pipe_runPipe(pipeline);
 
     void** output = Pipe_getOutput(pipeline);
+    Pipe_destroy(pipeline);
     for (int i = 0; i < len; ++i) {
         if (strcmp(output[i], "inputMPP") != 0) {
             printf("Test testPipeAndFarm failed\n");
             return;
         }
+    }
+    //check if end of stream
+    if (*((int *) output[len]) != EOS) {
+        printf("Test testSingleFarm failed\n");
+        return;
     }
     printf("Test testPipeAndFarm succeeded\n");
 }
@@ -274,29 +323,6 @@ int main() {
     testWorkerFarmWorker();
     testFarmAndPipe();
     testPipeAndFarm();
-
-//    FILE* file = fopen("../results.txt", "a");
-//    if (file == NULL)
-//    {
-//        printf("Error opening file!\n");
-//        exit(1);
-//    }
-//
-//    int maxIndex = 10;
-//    for (int workers_num = 19; workers_num <= 20; workers_num+=1) {
-//        printf("Number of workers: %d\n", workers_num);
-//        long long* times = Pipe_measureFarm(workers_num, maxIndex);
-//        for (int i = 0; i < maxIndex; ++i) {
-////            if (i > 0) fprintf(file, ",");
-////            fprintf(file, "%lld", times[i]);
-//            printf("%lld,", times[i]);
-//        }
-////        fprintf(file, "\n");
-//        printf("\n");
-//        free(times);
-//    }
-//
-//    fclose(file);
 
     return 0;
 }

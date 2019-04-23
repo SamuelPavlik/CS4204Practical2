@@ -4,6 +4,7 @@
 #include "Queue.h"
 
 #define EMPTY_NODE ((void*)0xCAFEBAB5)
+#define DESTROYED -1
 
 /**
  * Create a new Queue struct
@@ -44,7 +45,6 @@ Queue* Queue_init()
  */
 void Queue_destroy(Queue* this) {
     free(this);
-    this = NULL;
 }
 
 /**

@@ -14,13 +14,11 @@
  * @param output output queue struct pointer
  * @return Farm struct pointer
  */
-Farm* Farm_init(int num, void* (*func)(void*), Queue* input, Queue* output) {
+Farm* Farm_init(int num, void* (*func)(void*)) {
     Farm* this = malloc(sizeof(Farm));
     this->base.name = FARM;
     this->n = num;
     this->workers = malloc(num * sizeof(Worker*));
-    this->base.input = input;
-    this->base.output = output;
     this->base.func = func;
     for (int i = 0; i < num; ++i) {
         this->workers[i] = Worker_init(func, this->base.input, this->base.output, malloc(sizeof(pthread_t)));
@@ -34,14 +32,8 @@ Farm* Farm_init(int num, void* (*func)(void*), Queue* input, Queue* output) {
  * @param this farm struct pointer
  */
 Farm* Farm_destroy(Farm* this) {
-//    if (this->base.input != NULL) {
-//        free(this->base.input);
-//        this->base.input = NULL;
-//    }
-//    if (this->base.output != NULL) {
-//        free(this->base.output);
-//        this->base.output = NULL;
-//    }
+    Queue_destroy(this->base.input);
+    this->base.input = NULL;
 
     for (int i = 0; i < this->n; ++i) {
         Worker_destroy(this->workers[i]);

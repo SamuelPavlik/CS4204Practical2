@@ -85,8 +85,6 @@ void** Pipe_getOutput(Pipeline *pipeline) {
  */
 void Pipe_runPipe(Pipeline *pipeline) {
     for (int i = 0; i < pipeline->size; ++i) {
-//        Queue_print(pipeline->base.input);
-//        Queue_print(pipeline->base.output);
         Stage* stage = pipeline->stages[i];
         if (strcmp(stage->name, FARM) == 0) {
             Farm* farm = (Farm *) stage;
@@ -128,7 +126,11 @@ long long Pipe_measure(Pipeline* pipeline) {
     return end - start;
 }
 
-
+/**
+ * The example function calculating elements i Fibonacci sequence
+ * @param n index of element in the sequence to calculate
+ * @return nth element
+ */
 int fib(int n)
 {
     int  i, Fnew, Fold, temp,ans;
@@ -146,13 +148,18 @@ int fib(int n)
     return ans;
 }
 
+/**
+ * The Fibonacci function wrapped in a function that can be passed to a stage initializer
+ * @param n index of element in the sequence to calculate
+ * @return nth element
+ */
 void* fibFunc(void* n) {
     *((int *) n) = fib(*((int *) n));
     return n;
 }
 
 /**
- * Measure time it takes farm pattern to finish a number of tasks. The compexity of tasks raises exponentially.
+ * Measure time it takes farm pattern to finish a number of tasks. The complexity of tasks raises exponentially.
  * @param numOfWorkers Number of workers in the farm
  * @param maxIndex Number of tasks to finish.
  * @return Array of times, where each time corresponds to a different task.
@@ -160,7 +167,7 @@ void* fibFunc(void* n) {
 long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
     long long* times = malloc(maxIndex * sizeof(long long));
     Pipeline* pipeline = Pipe_init();
-    Farm* farm = Farm_init(numOfWorkers, fibFunc, NULL, NULL);
+    Farm* farm = Farm_init(numOfWorkers, fibFunc);
     Pipe_addStage(pipeline, (Stage *) farm);
     int size = 1;
 
@@ -186,6 +193,7 @@ long long* Pipe_measureFarm(int numOfWorkers, int maxIndex){
     }
 
     Pipe_destroy(pipeline);
+//    Farm_destroy(farm);
     printf("\n");
 
     return times;
@@ -209,12 +217,6 @@ Pipeline* Pipe_init() {
  * @param pipeline pipeline struct pointer
  */
 void Pipe_destroy(Pipeline* pipeline) {
-    if (pipeline->base.input != NULL) {
-        Queue_destroy(pipeline->base.input);
-    }
-    if (pipeline->base.output != NULL) {
-        Queue_destroy(pipeline->base.output);
-    }
 
     for (int i = 0; i < pipeline->size; ++i) {
         Stage* stage = pipeline->stages[i];
@@ -235,13 +237,17 @@ void Pipe_destroy(Pipeline* pipeline) {
             printf("Unknown stage type: %s\n", stage->name);
             exit(1);
         }
-
-//        free(stage->input);
     }
+
+    Queue_destroy(pipeline->base.output);
     free(pipeline->stages);
     free(pipeline);
 }
 
+/**
+ * Print info about this pipe
+ * @param this pipeline struct pointer
+ */
 void Pipe_print(Pipeline* this) {
     printf("Pipeline %p\n", this);
     printf("Input: %p\n", this->base.input);

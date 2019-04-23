@@ -29,14 +29,11 @@ Worker* Worker_init(void* (*func)(void*), Queue* input, Queue* output, pthread_t
  * @param this worker struct pointer
  */
 void Worker_destroy(Worker* this) {
-//    if (this->base.input != NULL) {
-//        free(this->base.input);
-//        this->base.input = NULL;
-//    }
-//    if (this->base.output != NULL) {
-//        free(this->base.output);
-//        this->base.output = NULL;
-//    }
+    //if no pthread-t id, it means that this is a single worker
+    // not in a farm and it has to clean up its input and output queues
+    if (this->id == NULL) {
+        Queue_destroy(this->base.input);
+    }
 
     free(this->id);
     free(this);

@@ -13,7 +13,7 @@ typedef struct {
     Worker** workers;
 } Farm;
 
-Farm* Farm_init(int num, void* (*func)(void*), Queue* input, Queue* output);
+Farm* Farm_init(int num, void* (*func)(void*));
 
 Farm* Farm_destroy(Farm* this);
 
