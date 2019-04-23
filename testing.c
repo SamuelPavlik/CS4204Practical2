@@ -20,6 +20,7 @@ void* multiplyTask(void *toPrint) {
 
 /**
  * Test single farm pipeline for the output
+ *
  */
 void testSingleFarm() {
     Farm* farm1 = Farm_init(5, multiplyTask);
