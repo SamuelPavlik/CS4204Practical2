@@ -69,18 +69,9 @@ void Farm_run(Farm* this) {
  */
 void Farm_collect(Farm *this) {
     for (int i = 0; i < this->n; ++i) {
-//        Worker* worker = this->workers[i];
-//        printf("Join: %p\n", this->workers[i]->id);
         pthread_join(*(this->workers[i]->id), NULL);
     }
-//    printf("All joined\n");
-//    printf("Input\n");
-//    Queue_print(this->base.input);
-//    printf("Output\n");
-//    Queue_print(this->base.output);
-
     Queue_put(Queue_get(this->base.input), this->base.output);
-//    printf("EOS enqueued\n");
 }
 
 /**

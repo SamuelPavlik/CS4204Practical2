@@ -44,6 +44,7 @@ Queue* Queue_init()
  */
 void Queue_destroy(Queue* this) {
     free(this);
+    this = NULL;
 }
 
 /**

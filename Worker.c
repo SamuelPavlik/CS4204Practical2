@@ -71,10 +71,7 @@ void* wrapperFunc(void* this) {
  * @param this worker struct pointer
  */
 void Worker_run(Worker* this) {
-//    printf("Running worker %p...\n", this);
-//    this->status = PROCESSING;
-
-    //run on the main thread if no pthread id specified
+   //run on the main thread if no pthread id specified
     //it means that only worker is used in this stage
     if (this->id == NULL) {
         wrapperFunc(this);

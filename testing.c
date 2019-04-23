@@ -4,7 +4,6 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include "parapat.h"
-#include <assert.h>
 
 void *printTask(void *toPrint) {
     strcat(toPrint, "P");
@@ -18,6 +17,9 @@ void* multiplyTask(void *toPrint) {
     return toPrint;
 }
 
+/**
+ * Test single farm pipeline for the output
+ */
 void testSingleFarm() {
     Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
     int len = 5;
@@ -42,6 +44,9 @@ void testSingleFarm() {
     printf("Test testSingleFarm succeeded\n");
 }
 
+/**
+ * Test two farms in pipeline for the output
+ */
 void testTwoFarms() {
     Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
     Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
@@ -68,6 +73,9 @@ void testTwoFarms() {
     printf("Test testTwoFarms succeeded\n");
 }
 
+/**
+ * Test two farms and a worker in pipeline for output
+ */
 void testTwoFarmsAndWorker() {
     Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
     Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
@@ -96,6 +104,9 @@ void testTwoFarmsAndWorker() {
     printf("Test testTwoFarmsAndWorker succeeded\n");
 }
 
+/**
+ * Test worker and farm in pipeline for output
+ */
 void testWorkerAndFarm() {
     Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
@@ -122,6 +133,9 @@ void testWorkerAndFarm() {
     printf("Test testWorkerAndFarm succeeded\n");
 }
 
+/**
+ * Test farm, worker and another farm in pipeline for output
+ */
 void testFarmWorkerFarm() {
     Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
@@ -150,6 +164,9 @@ void testFarmWorkerFarm() {
     printf("Test testFarmWorkerFarm succeeded\n");
 }
 
+/**
+ * Test worker, farm and another worker in pipeline for output
+ */
 void testWorkerFarmWorker() {
     Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
     Worker* worker2 = Worker_init(printTask, NULL, NULL, NULL);
@@ -178,7 +195,75 @@ void testWorkerFarmWorker() {
     printf("Test testWorkerFarmWorker succeeded\n");
 }
 
+/**
+ * Test farm followed by pipeline in pipeline for output
+ */
+void testFarmAndPipe() {
+    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
+    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
+    int len = 5;
+    void* data[len];
+    for (int j = 0; j < len; ++j) {
+        char* x = malloc(10 * sizeof(char));
+        strcpy(x, "input");
+        data[j] = x;
+    }
 
+    Pipeline* betweenPipe = Pipe_init();
+    Pipe_addStage(betweenPipe, (Stage *) farm1);
+    Pipe_addStage(betweenPipe, (Stage *) worker1);
+
+    Pipeline* pipeline = Pipe_init();
+    Pipe_addStage(pipeline, (Stage *) farm2);
+    Pipe_addStage(pipeline, (Stage *) betweenPipe);
+    Pipe_putToQueue(pipeline, data, len);
+    Pipe_runPipe(pipeline);
+
+    void** output = Pipe_getOutput(pipeline);
+    for (int i = 0; i < len; ++i) {
+        if (strcmp(output[i], "inputPMP") != 0) {
+            printf("Test testFarmAndPipe failed\n");
+            return;
+        }
+    }
+    printf("Test testFarmAndPipe succeeded\n");
+}
+
+/**
+ * Test pipeline followed by farm in pipeline for output
+ */
+void testPipeAndFarm() {
+    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
+    Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
+    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
+    int len = 5;
+    void* data[len];
+    for (int j = 0; j < len; ++j) {
+        char* x = malloc(10 * sizeof(char));
+        strcpy(x, "input");
+        data[j] = x;
+    }
+
+    Pipeline* betweenPipe = Pipe_init();
+    Pipe_addStage(betweenPipe, (Stage *) farm1);
+    Pipe_addStage(betweenPipe, (Stage *) worker1);
+
+    Pipeline* pipeline = Pipe_init();
+    Pipe_addStage(pipeline, (Stage *) betweenPipe);
+    Pipe_addStage(pipeline, (Stage *) farm2);
+    Pipe_putToQueue(pipeline, data, len);
+    Pipe_runPipe(pipeline);
+
+    void** output = Pipe_getOutput(pipeline);
+    for (int i = 0; i < len; ++i) {
+        if (strcmp(output[i], "inputMPP") != 0) {
+            printf("Test testPipeAndFarm failed\n");
+            return;
+        }
+    }
+    printf("Test testPipeAndFarm succeeded\n");
+}
 
 int main() {
     testSingleFarm();
@@ -187,39 +272,8 @@ int main() {
     testWorkerAndFarm();
     testFarmWorkerFarm();
     testWorkerFarmWorker();
-
-//    Farm* farm1 = Farm_init(5, multiplyTask, NULL, NULL);
-//    Worker* worker1 = Worker_init(printTask, NULL, NULL, NULL);
-//    Farm* farm2 = Farm_init(5, printTask, NULL, NULL);
-//    Worker* worker2 = Worker_init(printTask, NULL, NULL, NULL);
-//    int len = 5;
-//    void* data[len];
-//    for (int j = 0; j < len; ++j) {
-//        char* x = malloc(10 * sizeof(char));
-//        strcpy(x, "s");
-//        data[j] = x;
-//    }
-
-//    Pipeline* betweenPipe = Pipe_init();
-//    Pipe_addStage(betweenPipe, (Stage *) farm1);
-//    Pipe_addStage(betweenPipe, (Stage *) worker1);
-
-//    Pipeline* pipeline = Pipe_init();
-//    Pipe_addStage(pipeline, (Stage *) worker2);
-//    Pipe_addStage(pipeline, (Stage *) farm2);
-//    Pipe_addStage(pipeline, (Stage *) betweenPipe);
-//    Pipe_addStage(pipeline, (Stage *) farm1);
-//    Pipe_addStage(pipeline, (Stage *) worker1);
-//    Pipe_putToQueue(pipeline, data, len);
-//    Pipe_print(pipeline);
-//    Pipe_runPipe(pipeline);
-
-//    int size = pipeline->base.output->size - 1;
-//    printf("Size: %d\n", size);
-//    void** output = Pipe_getOutput(pipeline);
-//    for (int i = 0; i < size; ++i) {
-//        printf("Output %d: %s\n", i, ((char *) output[i]));
-//    }
+    testFarmAndPipe();
+    testPipeAndFarm();
 
 //    FILE* file = fopen("../results.txt", "a");
 //    if (file == NULL)

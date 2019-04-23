@@ -15,35 +15,31 @@
  * @param stageData Pointer to base Stage struct of this stage
  */
 void Pipe_addStage(Pipeline *pipeline, Stage* stageData) {
-    //assign input queue
-    if (pipeline->size > 0) {
-        stageData->input = pipeline->stages[pipeline->size - 1]->output;
+    if (strcmp(stageData->name, PIPE) != 0) {
+        //assign input queue
+        if (pipeline->size > 0) {
+            stageData->input = pipeline->stages[pipeline->size - 1]->output;
+        }
+        else {
+            stageData->input = Queue_init();
+            pipeline->base.input = stageData->input;
+        }
+
+        stageData->output = Queue_init();
+        pipeline->base.output = stageData->output;
+        pipeline->stages[pipeline->size] = stageData;
+        pipeline->size = pipeline->size + 1;
+
+        //if farm, assign input and output queue to each worker
+        if (strcmp(stageData->name, FARM) == 0) {
+            Farm_setWorkers((Farm *) stageData);
+        }
     }
     else {
-        stageData->input = Queue_init();
-        pipeline->base.input = stageData->input;
-
-//        if (pipeline->base.input == NULL) {
-//            stageData->input = Queue_init();
-//            pipeline->base.input = stageData->input;
-//        }
-//        else {
-//            stageData->input = pipeline->base.input;
-//        }
-    }
-
-    //assign output queue to both pipeline and this stage
-//    if (strcmp(stageData->name, PIPE) != 0) {
-//        stageData->output = Queue_init();
-//    }
-    stageData->output = Queue_init();
-    pipeline->base.output = stageData->output;
-    pipeline->stages[pipeline->size] = stageData;
-    pipeline->size = pipeline->size + 1;
-
-    //if farm, assign input and output queue to each worker
-    if (strcmp(stageData->name, FARM) == 0) {
-        Farm_setWorkers((Farm *) stageData);
+        Pipeline* stagePipe = ((Pipeline *) stageData);
+        for (int i = 0; i < stagePipe->size; ++i) {
+            Pipe_addStage(pipeline, stagePipe->stages[i]);
+        }
     }
 }
 
@@ -215,13 +211,9 @@ Pipeline* Pipe_init() {
 void Pipe_destroy(Pipeline* pipeline) {
     if (pipeline->base.input != NULL) {
         Queue_destroy(pipeline->base.input);
-//        free(pipeline->base.input);
-//        pipeline->base.input = NULL;
     }
     if (pipeline->base.output != NULL) {
         Queue_destroy(pipeline->base.output);
-//        free(pipeline->base.output);
-//        pipeline->base.output = NULL;
     }
 
     for (int i = 0; i < pipeline->size; ++i) {
