@@ -70,6 +70,8 @@ Evaluation has been done for a single farm. I did not see a reason to evaluate a
 
 The graph also indicates that a change in dataset size yields similar results for farms with different number of workers higher than four.
 
+![](ParallelPatternsGraph.png)
+
 # Testing
 Testing has been done using a number of test functions inplemented in the testing.c file that can be run by executing the testing-exe file.
 
